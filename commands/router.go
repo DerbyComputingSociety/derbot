@@ -50,11 +50,7 @@ func Handle(command string, s *discordgo.Session, m *discordgo.MessageCreate) {
 var commands = Commands{
 	Command{
 		"help",
-		"display information about the available commands",
-		help,
+		"send help",
+		Help,
 	},
-}
-
-func help(context CommandContext) {
-	log.Println("show help")
 }
