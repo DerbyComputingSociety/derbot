@@ -15,8 +15,8 @@ import (
 const CONFIG_PATH = "config.txt"
 
 var (
-	Token string
-	Owner string
+	Token  string
+	Prefix string
 )
 
 func main() {
@@ -47,14 +47,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	prefix := "::"
-
-	if strings.HasPrefix(m.Content, prefix) {
+	if strings.HasPrefix(m.Content, Prefix) {
 		log.Printf(
 			"%s\t%s\t%s",
 			m.ChannelID,
 			m.Author.ID,
-			strings.TrimPrefix(m.Content, prefix))
+			strings.TrimPrefix(m.Content, Prefix))
 
 		s.ChannelMessageSend(m.ChannelID, "command used")
 	}
@@ -66,12 +64,17 @@ func readConfig() {
 
 	if err != nil {
 		log.Println("Config not found, creating...")
-
-		if _, err := file.WriteString("token=\nowner=\n"); err != nil {
+		file, err = os.Create(CONFIG_PATH)
+		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Println("Please fill in the config file and run again")
+		if _, err := file.WriteString("token=\nprefix=\n"); err != nil {
+			log.Fatal(err)
+		}
+
+		log.Fatalln("Please fill in the config file and run again")
+
 	}
 
 	reader := bufio.NewReader(file)
@@ -87,14 +90,14 @@ func readConfig() {
 		switch key {
 		case "token":
 			Token = value
-		case "owner":
-			Owner = value
+		case "prefix":
+			Prefix = value
 		default:
 			fmt.Printf("unknown key '%s'\n", key)
 		}
 	}
 
-	if Token == "" || Owner == "" {
+	if Token == "" || Prefix == "" {
 		log.Fatalln("Config not set. Please fill in config.txt")
 	}
 
