@@ -8,6 +8,7 @@ import (
 	"strings"
 	"syscall"
 
+	"derbot/commands"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -42,12 +43,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.HasPrefix(m.Content, _config.Prefix) {
-		log.Printf(
-			"%s\t%s\t%s",
-			m.ChannelID,
-			m.Author.ID,
-			strings.TrimPrefix(m.Content, _config.Prefix))
-
-		s.ChannelMessageSend(m.ChannelID, "command used")
+		command := strings.TrimPrefix(m.Content, _config.Prefix)
+		commands.Handle(command, s, m)
 	}
 }
