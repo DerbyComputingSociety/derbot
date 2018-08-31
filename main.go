@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -12,17 +11,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-const CONFIG_PATH = "config.txt"
-
-var (
-	Token  string
-	Prefix string
-)
+var _config Config
 
 func main() {
-	readConfig()
+	_config = ReadConfig()
 
-	discord, err := discordgo.New("Bot " + Token)
+	discord, err := discordgo.New("Bot " + _config.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,61 +41,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if strings.HasPrefix(m.Content, Prefix) {
+	if strings.HasPrefix(m.Content, _config.Prefix) {
 		log.Printf(
 			"%s\t%s\t%s",
 			m.ChannelID,
 			m.Author.ID,
-			strings.TrimPrefix(m.Content, Prefix))
+			strings.TrimPrefix(m.Content, _config.Prefix))
 
 		s.ChannelMessageSend(m.ChannelID, "command used")
-	}
-}
-
-func readConfig() {
-	file, err := os.Open(CONFIG_PATH)
-	defer file.Close()
-
-	if err != nil {
-		log.Println("Config not found, creating...")
-		file, err = os.Create(CONFIG_PATH)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := file.WriteString("token=\nprefix=\n"); err != nil {
-			log.Fatal(err)
-		}
-
-		log.Fatalln("Please fill in the config file and run again")
-
-	}
-
-	reader := bufio.NewReader(file)
-	scanner := bufio.NewScanner(reader)
-
-	for scanner.Scan() {
-		text := scanner.Text()
-		values := strings.Split(text, "=")
-
-		key := values[0]
-		value := values[1]
-
-		switch key {
-		case "token":
-			Token = value
-		case "prefix":
-			Prefix = value
-		default:
-			fmt.Printf("unknown key '%s'\n", key)
-		}
-	}
-
-	if Token == "" || Prefix == "" {
-		log.Fatalln("Config not set. Please fill in config.txt")
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
 	}
 }
