@@ -8,7 +8,6 @@ import (
 	"strings"
 	"syscall"
 
-	"derbot/commands"
 	"github.com/bwmarrin/discordgo"
 )
 
